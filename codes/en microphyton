@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define ECHO_PIN 26
+#define TRIGGER_PIN 27
+
+void medir_distancia(void);
+
+int main() {
+    while (1) {
+        medir_distancia();
+    }
+    return 0;
+}
+
+void medir_distancia(void) {
+    float distancia;
+    int pulso_duracion;
+    int I2C_ADDR;
+    int i2c;
+    int trigger;
+    int echo;
+    int led;
+
+    i2c = I2C(0, Pin(0), Pin(1), 400000);
+    I2C_ADDR = i2c.scan()[0];
+    trigger = Pin(TRIGGER_PIN, Pin.OUT);
+    echo = Pin(ECHO_PIN, Pin.IN);
+    led = Pin(13, Pin.OUT);
+
+    //crear objeto tipo lcd
+    //lcd = I2cLcd(i2c, I2C_ADDR, 2, 16);
+
+    trigger.low();
+    sleep_us(2);
+    trigger.high();
+    sleep_us(10);
+    trigger.low();
+    //duracion
+    pulso_duracion = time_pulse_us(echo, Pin.high);
+    //CALCULAR LA DISTANCIA
+    distancia = pulso_duracion * 0.034 / 2;
+
+    printf("Distancia: %0.1f cm\n", distancia);
+
+    if (distancia < 11) {
+        led.high();
+        //lcd.clear();
+        //lcd.putstr("Distancia: " + str(distancia) + "cm\nLED: ON");
+    } else if (distancia > 18) {
+        led.low();
+        //lcd.clear();
+        //lcd.putstr("Distancia: " + str(distancia) + "cm\nLED: OFF");
+    }
+
+    sleep(2);
+}
